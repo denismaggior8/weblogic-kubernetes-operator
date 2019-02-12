@@ -13,10 +13,12 @@ refer to the [User guide](user-guide.md).
     `Error from server (BadRequest): error when creating "/scratch/output/uidomain/weblogic-domains/uidomain/domain.yaml":
     the API version in the data (weblogic.oracle/v2) does not match the expected API version (weblogic.oracle/v1`
 
+> **NOTE**: You should be able to upgrade from version 2.0-rc2 to 2.0 because there are no backward incompatible changes between these two releases.    
+
 ## Prerequisites
 For this exercise, you’ll need a Kubernetes cluster. If you need help setting one up, check out our [cheat sheet](k8s_setup.md). This guide assumes a single node cluster.
 
-The operator uses Helm to create and deploy necessary resources and then run the operator in a Kubernetes cluster. For Helm installation and usage information, see [Install Helm and Tiller](install.md#install-helm-and-tiller).
+The operator uses Helm to create and deploy the necessary resources and then run the operator in a Kubernetes cluster. For Helm installation and usage information, see [Install Helm and Tiller](install.md#install-helm-and-tiller).
 
 You should clone this repository to your local machine so that you have access to the
 various sample files mentioned throughout this guide:
@@ -26,27 +28,27 @@ $ git clone https://github.com/oracle/weblogic-kubernetes-operator
 
 ## 1.	Get these images and put them into your local registry.
 
-a.  If you don't already have one, obtain a Docker Store account, log in to the Docker Store
+a.  If you don't already have one, obtain a Docker store account, log in to the Docker store
     and accept the license agreement for the [WebLogic Server image](https://hub.docker.com/_/oracle-weblogic-server-12c).
 
-b.  Log in to the Docker Store from your Docker client:
+b.  Log in to the Docker store from your Docker client:
 ```
 $ docker login
 ```
 c.	Pull the operator image:
 ```
-$ docker pull oracle/weblogic-kubernetes-operator:2.0-rc2
+$ docker pull oracle/weblogic-kubernetes-operator:2.0
 ```
 d.	Pull the Traefik load balancer image:
 ```
-$ docker pull traefik:1.7.4
+$ docker pull traefik:1.7.6
 ```
 e.	Pull the WebLogic 12.2.1.3 install image:
 
 ```
 $ docker pull store/oracle/weblogic:12.2.1.3
 ```  
-**Note**: The existing WebLogic Docker image, `store/oracle/weblogic:12.2.1.3`, was updated on January 17, 2019, and has all the necessary patches applied; a `docker pull` is required if you already have this image.
+**Note**: The existing WebLogic Docker image, `store/oracle/weblogic:12.2.1.3`, was updated on January 17, 2019, and has all the necessary patches applied; a `docker pull` is required if you pulled the image prior to that date.
 
 f. Copy the image to all the nodes in your cluster, or put it in a Docker registry that your cluster can access.
 
@@ -97,7 +99,6 @@ c.  Use `helm` to install and start the operator from the directory you just clo
 $ helm install kubernetes/charts/weblogic-operator \
   --name sample-weblogic-operator \
   --namespace sample-weblogic-operator-ns \
-  --set image=oracle/weblogic-kubernetes-operator:2.0-rc2 \
   --set serviceAccount=sample-weblogic-operator-sa \
   --set "domainNamespaces={}" \
   --wait
@@ -189,10 +190,10 @@ script will just generate the YAML files, but will not take any action on your c
 
 If you run the sample from a machine that is remote to the Kubernetes cluster, and you need to push the new image to a registry that is local to the cluster, you need to do the following:
 * Set the `image` property in the inputs file to the target image name (including the registry hostname/port, and the tag if needed).
+* If you want Kubernetes to pull the image from a private registry, create a Kubernetes secret to hold your credentials and set the `imagePullSecretName` property in the inputs file to the name of the secret. Note that the secret needs to be in the same namespace as where you want to run the domain.
 * Run the `create-domain.sh` script without the `-e` option.
 * Push the `image` to the registry.
 * Run the following command to create the domain.
-
 ```
 $ kubectl apply -f /some/output/directory/weblogic-domains/sample-domain1/domain.yaml
 ```
@@ -223,9 +224,15 @@ $ helm install kubernetes/samples/charts/ingress-per-domain \
 ```
 
 e.	To confirm that the load balancer noticed the new Ingress and is successfully routing to the domain's server pods,
-    you can hit the URL for the "WebLogic Ready App" which will return a HTTP 200 status code, as
+    you can send a request to the URL for the "WebLogic ReadyApp framework" which will return a HTTP 200 status code, as
     shown in the example below.  If you used the host-based routing Ingress sample, you will need to
     provide the hostname in the `-H` option.
+
+  Substitute the Node IP address of the worker node for `your.server.com`. You can find it by running:
+
+```
+    $ kubectl get po -n sample-domain1-ns -o wide
+```
 
 **NOTE**: Be sure to include the trailing forward slash on the URL, otherwise the command won't work.
 
@@ -245,8 +252,10 @@ $ curl -v -H 'host: sample-domain1.org' http://your.server.com:30305/weblogic/
  < Vary: Accept-Encoding
 < * Connection #0 to host your.server.com left intact
 ```
-**Note**: Depending on where your Kubernetes cluster is running, you may need to open firewall ports or
-update security lists to allow ingress to this port.
+
+**Note**: Depending on where your Kubernetes cluster is running, you may need to open firewall ports or update security lists to allow ingress to this port.
+
+f.	To access the WLS Administration Console, edit the `my-inputs.yaml` file (assuming that you named your copy `my-inputs.yaml`) to set `exposedAdminNodePort: true`. Open a browser to `http://your.server.com:30701`. As in the previous step, substitute the Node IP address of the worker node for `your.server.com`.
 
 ## 7. Remove the domain.
 

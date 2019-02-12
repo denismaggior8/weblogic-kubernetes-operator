@@ -1,8 +1,8 @@
 # Oracle WebLogic Server Kubernetes Operator
 
-Built with [Wercker](http://www.wercker.com)
+Built with [Jenkins](http://build.weblogick8s.org:8080/job/weblogic-kubernetes-operator/)
 
-[![wercker status](https://app.wercker.com/status/68ce42623fce7fb2e52d304de8ea7530/m/develop "wercker status")](https://app.wercker.com/project/byKey/68ce42623fce7fb2e52d304de8ea7530)
+[![Build Status](http://build.weblogick8s.org:8080/buildStatus/icon?job=weblogic-kubernetes-operator)](http://build.weblogick8s.org:8080/job/weblogic-kubernetes-operator/)
 
 Oracle is finding ways for organizations using WebLogic Server to run important workloads, to move those workloads into the cloud. By certifying on industry standards, such as Docker and Kubernetes, WebLogic now runs in a cloud neutral infrastructure. In addition, we've provided an open-source Oracle WebLogic Server Kubernetes Operator (the “operator”) which has several key features to assist you with deploying and managing WebLogic domains in a Kubernetes environment. You can:
 
@@ -21,11 +21,8 @@ Oracle is finding ways for organizations using WebLogic Server to run important 
 The fastest way to experience the operator is to follow the [Quick Start guide](site/quickstart.md), or you can peruse our [documentation](site), read our [blogs](https://blogs.oracle.com/weblogicserver/how-to-weblogic-server-on-kubernetes), or try out the [samples](kubernetes/samples/README.md).
 
 ```diff
-+ The current release of the operator is 2.0-rc2, a release candidate for our 2.0 release.
-+ This release candidate was published on Jan. 16, 2019.
-+ We expect to publish the final 2.0 release later in January, 2019.
-+ We expect that there will be some minor changes to documentation and samples in the final 2.0 release.
-+ However, this release candidate is suitable for testing and early adopters.
++ The current release of the operator is 2.0.
++ This release was published on Jan. 24, 2019.
 ```
 
 ## Known issues
